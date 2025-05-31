@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Gráfico de Cotações</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Barra de pesquisa -->
+  <ion-item>
+    <ion-label position="stacked">Pesquisar moeda</ion-label>
+    <ion-input [(ngModel)]="filtro" (ionInput)="filtrarMoedas()" placeholder="Nome ou sigla"></ion-input>
+  </ion-item>
+
+  <!-- Selects de moeda base e destino -->
+  <ion-item>
+    <ion-label>Moeda Base</ion-label>
+    <ion-select [(ngModel)]="moedaBase" (ionChange)="atualizarGrafico()">
+      <ion-select-option *ngFor="let moeda of moedasFiltradas" [value]="moeda.sigla">
+        {{moeda.sigla}} - {{moeda.nome}}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-label>Moeda Destino</ion-label>
+    <ion-select [(ngModel)]="moedaDestino" (ionChange)="atualizarGrafico()">
+      <ion-select-option *ngFor="let moeda of moedasFiltradas" [value]="moeda.sigla">
+        {{moeda.sigla}} - {{moeda.nome}}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- Gráfico -->
+  <div style="margin-top: 24px;">
+    <canvas id="graficoCotacao" height="300"></canvas>
+  </div>
+</ion-content>

@@ -1,0 +1,100 @@
+import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import Chart from 'chart.js/auto';
+
+@Component({
+  selector: 'app-grafico',
+  templateUrl: './grafico.page.html',
+  styleUrls: ['./grafico.page.scss'],
+})
+export class GraficoPage implements OnInit, AfterViewInit {
+  moedas: { sigla: string, nome: string }[] = [];
+  moedasFiltradas: { sigla: string, nome: string }[] = [];
+  filtro = '';
+  moedaBase = '';
+  moedaDestino = '';
+  chart: any;
+
+  private readonly API_KEY = '2bd282039674cb8ecee71a7d';
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit() {
+    this.carregarMoedas();
+  }
+
+  ngAfterViewInit() {
+    // O gráfico será desenhado após carregar as moedas e definir as moedas base/destino
+    // Não precisa fazer nada aqui, pois o fluxo está no carregarMoedas()
+  }
+
+  carregarMoedas() {
+    this.http.get<any>(`https://v6.exchangerate-api.com/v6/${this.API_KEY}/codes`)
+      .subscribe(res => {
+        if (res && res.result === 'success') {
+          this.moedas = res.supported_codes.map(([sigla, nome]: [string, string]) => ({
+            sigla,
+            nome
+          }));
+          this.moedasFiltradas = [...this.moedas];
+          this.moedaBase = this.moedas.find(m => m.sigla === 'USD')?.sigla || this.moedas[0].sigla;
+          this.moedaDestino = this.moedas.find(m => m.sigla === 'BRL')?.sigla || this.moedas[1].sigla;
+          setTimeout(() => this.atualizarGrafico(), 300); // Garante que o canvas já existe
+        }
+      });
+  }
+
+  filtrarMoedas() {
+    const termo = this.filtro.toLowerCase();
+    this.moedasFiltradas = this.moedas.filter(m =>
+      m.sigla.toLowerCase().includes(termo) ||
+      m.nome.toLowerCase().includes(termo)
+    );
+  }
+
+  atualizarGrafico() {
+    if (!this.moedaBase || !this.moedaDestino) return;
+
+    this.http.get<any>(`https://v6.exchangerate-api.com/v6/${this.API_KEY}/latest/${this.moedaBase}`)
+      .subscribe(res => {
+        if (res && res.result === 'success') {
+          const rate = res.conversion_rates[this.moedaDestino];
+          const labels = [new Date().toLocaleDateString()];
+          const data = [rate];
+
+          // Diagnóstico: exiba dados no console!
+          console.log('Desenhando gráfico:', labels, data);
+
+          const canvas: any = document.getElementById('graficoCotacao');
+          if (!canvas) {
+            console.error('Canvas não encontrado!');
+            return;
+          }
+          if (this.chart) this.chart.destroy();
+          this.chart = new Chart(canvas, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: `${this.moedaBase}/${this.moedaDestino}`,
+                data: data,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.2,
+                fill: false
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: true }
+              }
+            }
+          });
+        } else {
+          console.error('Resposta da API inválida', res);
+        }
+      }, error => {
+        console.error('Erro ao buscar cotação:', error);
+      });
+  }
+}
