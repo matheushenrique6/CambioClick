@@ -1,35 +1,44 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Gráfico de Cotação</ion-title>
+    <ion-title>Gráfico de Cotações</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content>
+  <!-- Pesquisa para moeda base -->
+  <ion-item>
+    <ion-label position="stacked">Pesquisar moeda base</ion-label>
+    <ion-input [(ngModel)]="filtroBase" (ionInput)="filtrarMoedasBase()" placeholder="Nome ou sigla"></ion-input>
+  </ion-item>
+
+  <!-- Select moeda base -->
   <ion-item>
     <ion-label>Moeda Base</ion-label>
     <ion-select [(ngModel)]="moedaBase" (ionChange)="atualizarGrafico()">
-      <ion-select-option *ngFor="let m of moedasFiltradas" [value]="m.sigla">
-        {{ m.sigla }} - {{ m.nome }}
+      <ion-select-option *ngFor="let moeda of moedasVisiveisBase" [value]="moeda.sigla">
+        {{moeda.sigla}} - {{moeda.nome}}
       </ion-select-option>
     </ion-select>
   </ion-item>
 
+  <!-- Pesquisa para moeda destino -->
+  <ion-item>
+    <ion-label position="stacked">Pesquisar moeda destino</ion-label>
+    <ion-input [(ngModel)]="filtroDestino" (ionInput)="filtrarMoedasDestino()" placeholder="Nome ou sigla"></ion-input>
+  </ion-item>
+
+  <!-- Select moeda destino -->
   <ion-item>
     <ion-label>Moeda Destino</ion-label>
     <ion-select [(ngModel)]="moedaDestino" (ionChange)="atualizarGrafico()">
-      <ion-select-option *ngFor="let m of moedasFiltradas" [value]="m.sigla">
-        {{ m.sigla }} - {{ m.nome }}
+      <ion-select-option *ngFor="let moeda of moedasVisiveisDestino" [value]="moeda.sigla">
+        {{moeda.sigla}} - {{moeda.nome}}
       </ion-select-option>
     </ion-select>
   </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Filtrar moedas</ion-label>
-    <ion-input [(ngModel)]="filtro" (ionInput)="filtrarMoedas()"></ion-input>
-  </ion-item>
-
-  <div *ngIf="carregando" class="carregando">⏳ Carregando dados...</div>
-  <div *ngIf="mensagemErro" class="erro">{{ mensagemErro }}</div>
-
-  <canvas id="graficoCotacao"></canvas>
+  <!-- Gráfico -->
+  <div style="margin-top: 24px;">
+    <canvas id="graficoCotacao" height="300"></canvas>
+  </div>
 </ion-content>

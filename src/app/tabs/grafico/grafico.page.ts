@@ -9,8 +9,11 @@ import Chart from 'chart.js/auto';
 })
 export class GraficoPage implements OnInit, AfterViewInit {
   moedas: { sigla: string, nome: string }[] = [];
-  moedasFiltradas: { sigla: string, nome: string }[] = [];
-  filtro = '';
+  moedasVisiveisBase: { sigla: string, nome: string }[] = [];
+  moedasVisiveisDestino: { sigla: string, nome: string }[] = [];
+
+  filtroBase = '';
+  filtroDestino = '';
   moedaBase = '';
   moedaDestino = '';
   chart: any;
@@ -34,23 +37,30 @@ export class GraficoPage implements OnInit, AfterViewInit {
     this.http.get<any>(`https://v6.exchangerate-api.com/v6/${this.API_KEY}/codes`)
       .subscribe(res => {
         if (res && res.result === 'success') {
-          this.moedas = res.supported_codes.map(([sigla, nome]: [string, string]) => ({
-            sigla,
-            nome
-          }));
-          this.moedasFiltradas = [...this.moedas];
+          this.moedas = res.supported_codes.map(([sigla, nome]: [string, string]) => ({ sigla, nome }));
+          this.moedasVisiveisBase = [...this.moedas];
+          this.moedasVisiveisDestino = [...this.moedas];
           this.moedaBase = this.moedas.find(m => m.sigla === 'USD')?.sigla || this.moedas[0].sigla;
           this.moedaDestino = this.moedas.find(m => m.sigla === 'BRL')?.sigla || this.moedas[1].sigla;
-          setTimeout(() => this.atualizarGrafico(), 300); // Garante que o canvas já existe
+          setTimeout(() => this.atualizarGrafico(), 300);
         }
+      }, error => {
+        this.mensagemErro = 'Erro ao carregar moedas. Tente novamente.';
+        console.error('Erro ao carregar moedas:', error);
       });
   }
 
-  filtrarMoedas() {
-    const termo = this.filtro.toLowerCase();
-    this.moedasFiltradas = this.moedas.filter(m =>
-      m.sigla.toLowerCase().includes(termo) ||
-      m.nome.toLowerCase().includes(termo)
+  filtrarMoedasBase() {
+    const termo = this.filtroBase.toLowerCase().trim();
+    this.moedasVisiveisBase = this.moedas.filter(m =>
+      m.sigla.toLowerCase().includes(termo) || m.nome.toLowerCase().includes(termo)
+    );
+  }
+
+  filtrarMoedasDestino() {
+    const termo = this.filtroDestino.toLowerCase().trim();
+    this.moedasVisiveisDestino = this.moedas.filter(m =>
+      m.sigla.toLowerCase().includes(termo) || m.nome.toLowerCase().includes(termo)
     );
   }
 
@@ -67,7 +77,6 @@ export class GraficoPage implements OnInit, AfterViewInit {
         if (res && res.result === 'success') {
           const rate = res.conversion_rates[this.moedaDestino];
 
-          // Simula 7 dias de histórico
           const labels: string[] = [];
           const data: number[] = [];
 
@@ -107,9 +116,7 @@ export class GraficoPage implements OnInit, AfterViewInit {
                 legend: { display: true }
               },
               scales: {
-                y: {
-                  beginAtZero: false
-                }
+                y: { beginAtZero: false }
               }
             }
           });
