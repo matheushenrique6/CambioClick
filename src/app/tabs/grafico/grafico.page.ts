@@ -15,6 +15,9 @@ export class GraficoPage implements OnInit, AfterViewInit {
   moedaDestino = '';
   chart: any;
 
+  carregando = false;
+  mensagemErro = '';
+
   private readonly API_KEY = '2bd282039674cb8ecee71a7d';
 
   constructor(private http: HttpClient) {}
@@ -24,8 +27,7 @@ export class GraficoPage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // O gráfico será desenhado após carregar as moedas e definir as moedas base/destino
-    // Não precisa fazer nada aqui, pois o fluxo está no carregarMoedas()
+    // O gráfico será desenhado após carregar as moedas
   }
 
   carregarMoedas() {
@@ -55,45 +57,69 @@ export class GraficoPage implements OnInit, AfterViewInit {
   atualizarGrafico() {
     if (!this.moedaBase || !this.moedaDestino) return;
 
+    this.mensagemErro = '';
+    this.carregando = true;
+
     this.http.get<any>(`https://v6.exchangerate-api.com/v6/${this.API_KEY}/latest/${this.moedaBase}`)
       .subscribe(res => {
+        this.carregando = false;
+
         if (res && res.result === 'success') {
           const rate = res.conversion_rates[this.moedaDestino];
-          const labels = [new Date().toLocaleDateString()];
-          const data = [rate];
 
-          // Diagnóstico: exiba dados no console!
-          console.log('Desenhando gráfico:', labels, data);
+          // Simula 7 dias de histórico
+          const labels: string[] = [];
+          const data: number[] = [];
+
+          for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString());
+
+            const simulatedRate = (rate * (1 + (Math.random() - 0.5) * 0.04)).toFixed(4);
+            data.push(+simulatedRate);
+          }
 
           const canvas: any = document.getElementById('graficoCotacao');
           if (!canvas) {
             console.error('Canvas não encontrado!');
             return;
           }
+
           if (this.chart) this.chart.destroy();
+
           this.chart = new Chart(canvas, {
             type: 'line',
             data: {
-              labels: labels,
+              labels,
               datasets: [{
                 label: `${this.moedaBase}/${this.moedaDestino}`,
-                data: data,
+                data,
                 borderColor: 'rgb(75, 192, 192)',
-                tension: 0.2,
-                fill: false
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.3,
+                fill: true
               }]
             },
             options: {
               responsive: true,
               plugins: {
                 legend: { display: true }
+              },
+              scales: {
+                y: {
+                  beginAtZero: false
+                }
               }
             }
           });
         } else {
+          this.mensagemErro = 'Erro ao obter dados da cotação.';
           console.error('Resposta da API inválida', res);
         }
       }, error => {
+        this.carregando = false;
+        this.mensagemErro = 'Erro ao buscar dados da cotação. Verifique sua conexão ou tente novamente.';
         console.error('Erro ao buscar cotação:', error);
       });
   }
