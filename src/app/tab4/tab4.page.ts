@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartData, ChartDataset } from 'chart.js';
+import { ChartConfiguration } from 'chart.js';
 import { ExchangeRateService } from '../services/exchange-rate.service';
 import { SelecionarMoedaPage } from '../selecionar-moeda/selecionar-moeda.page';
+import { HttpClient } from '@angular/common/http'; // ✅ IMPORTANTE
 
 @Component({
   selector: 'app-tab4',
@@ -12,6 +13,8 @@ import { SelecionarMoedaPage } from '../selecionar-moeda/selecionar-moeda.page';
 export class Tab4Page implements OnInit {
 
   selectedCurrency = 'USD';
+
+  currencyList: { code: string; name: string }[] = []; // ✅ Lista de moedas
 
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
@@ -31,16 +34,32 @@ export class Tab4Page implements OnInit {
 
   constructor(
     private exchangeService: ExchangeRateService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private http: HttpClient // ✅ Injetar HttpClient
   ) {}
 
   ngOnInit() {
+    this.loadCurrencies(); // ✅ Carrega a lista
     this.loadChart(this.selectedCurrency);
   }
 
+  // ✅ Método para carregar moedas do JSON
+  loadCurrencies() {
+    this.http.get<{ [key: string]: string }>('/assets/currencies.json').subscribe((data) => {
+      this.currencyList = Object.entries(data).map(([code, name]) => ({
+        code,
+        name,
+      }));
+    });
+  }
+
+  // ✅ Passa a lista de moedas para o modal
   async abrirModalMoeda() {
     const modal = await this.modalCtrl.create({
-      component: SelecionarMoedaPage
+      component: SelecionarMoedaPage,
+      componentProps: {
+        moedas: this.currencyList
+      }
     });
 
     await modal.present();
