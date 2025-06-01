@@ -5,7 +5,11 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+  },  {
+    path: 'selecionar-moeda',
+    loadChildren: () => import('./selecionar-moeda/selecionar-moeda.module').then( m => m.SelecionarMoedaPageModule)
   }
+
 ];
 @NgModule({
   imports: [

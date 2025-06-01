@@ -3,7 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { HistoryService } from '../services/history.service';
 import { Storage } from '@ionic/storage-angular';
-
+import { ModalController } from '@ionic/angular';
+import { SelecionarMoedaPage } from '../selecionar-moeda/selecionar-moeda.page';
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab2.page.html',
@@ -26,7 +27,8 @@ export class Tab2Page implements OnInit {
   constructor(
     private http: HttpClient,
     private historyService: HistoryService,
-    private storage: Storage
+    private storage: Storage,
+    private modalController: ModalController
   ) {
     this.initStorage();
     this.loadCacheDuration();
@@ -170,4 +172,28 @@ export class Tab2Page implements OnInit {
       this.isOffline = true;
     }
   }
+  async abrirSelecionarMoeda(tipo: 'de' | 'para') {
+  const modal = await this.modalController.create({
+    component: SelecionarMoedaPage,
+    componentProps: {
+      moedas: this.currencyList
+    }
+  });
+
+  modal.onDidDismiss().then(result => {
+    if (result.data) {
+      if (tipo === 'de') {
+        this.fromCurrency = result.data.code;
+        this.loadFlag(this.fromCurrency);
+      } else {
+        this.toCurrency = result.data.code;
+        this.loadFlag(this.toCurrency);
+      }
+      this.getExchangeRate(); // Atualiza a conversão
+    }
+  });
+
+  return await modal.present();
+}
+
 }

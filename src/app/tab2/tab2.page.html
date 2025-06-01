@@ -40,20 +40,11 @@
         </ion-card-header>
         <ion-card-content>
       <ion-item>
-        <ion-select
-          [(ngModel)]="fromCurrency"
-          name="fromCurrency"
-          (ionChange)="loadFlag(fromCurrency)"
-          interface="modal">
+        
+      <ion-button expand="block" fill="outline" (click)="abrirSelecionarMoeda('de')">
+  {{ fromCurrency || 'Selecionar Moeda' }}
+</ion-button>
 
-          <ion-select-option
-          *ngFor="let currency of currencyList"
-          [value]="currency.code"
-        >
-          {{ currency.code }} - {{ currency.name }}
-        </ion-select-option>
-
-        </ion-select>
         <img [src]="getFlag(fromCurrency)" alt="From flag" *ngIf="fromCurrency" />
       </ion-item>
     </ion-card-content>
@@ -73,11 +64,10 @@
       </ion-card-header>
       <ion-card-content>
       <ion-item>
-        <ion-select [(ngModel)]="toCurrency" name="toCurrency" (ionChange)="loadFlag(toCurrency)" interface="modal">
-          <ion-select-option *ngFor="let currency of currencyList" [value]="currency.code">
-            {{ currency.code }} - {{ currency.name }}
-          </ion-select-option>
-        </ion-select>
+       <ion-button expand="block" fill="outline" (click)="abrirSelecionarMoeda('para')">
+  {{ toCurrency || 'Selecionar Moeda' }}
+</ion-button>
+
         <img [src]="getFlag(toCurrency)" alt="To flag" *ngIf="toCurrency" />
       </ion-item>
     </ion-card-content>
