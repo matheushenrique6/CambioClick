@@ -1,0 +1,16 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Gráfico de câmbio</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button expand="full" (click)="abrirModalMoeda()">
+    Selecionar moeda (Atual: {{ selectedCurrency }})
+  </ion-button>
+
+  <canvas baseChart
+    [data]="lineChartData"
+    [type]="'line'">
+  </canvas>
+</ion-content>
