@@ -30,7 +30,7 @@ export class GraficoPage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // O gráfico será desenhado após carregar as moedas
+   this.carregarMoedas();
   }
 
   carregarMoedas() {

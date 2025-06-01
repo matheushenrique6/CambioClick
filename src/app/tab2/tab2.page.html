@@ -1,109 +1,111 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>CambioClick</ion-title>
-    <ion-badge slot="end" color="warning" *ngIf="isOffline" class="ion-margin-end">
-      Conversões são salvas no cache
+    <ion-badge slot="end" color="warning" *ngIf="isOffline" class="ion-margin-end" style="font-size: 0.7rem;">
+      Conversões salvas no cache
     </ion-badge>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding" style="height: 100vh; display: flex; flex-direction: column;">
 
-  <div style="max-width: 500px; margin: 0 auto; width: 100%;">
+  <div style="max-width: 400px; margin: 0 auto; width: 100%; flex: 1; display: flex; flex-direction: column;">
 
-    <form #conversionForm="ngForm" (ngSubmit)="getExchangeRate()">
+    <form #conversionForm="ngForm" (ngSubmit)="getExchangeRate()" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
 
+      <div style="gap: 8px; display: flex; flex-direction: column;">
 
+        <ion-card color="translucent" style="margin-bottom: 8px;">
+          <ion-card-header style="padding: 8px 16px;">
+            <ion-card-subtitle style="font-size: 0.85rem;">Selecione um valor</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content style="padding: 0 16px 8px;">
+            <ion-input
+              [(ngModel)]="amount"
+              name="amount"
+              type="number"
+              required
+              min="0.01"
+              [errorText]="'Insira um valor válido'"
+              style="font-size: 1rem;">
+            </ion-input>
+          </ion-card-content>
+        </ion-card>
 
-     <ion-card color="transluced">
-      <ion-card-header>
-        <ion-card-subtitle>Selecione um valor</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-input
-        [(ngModel)]="amount"
-        name="amount"
-        type="number"
-        required
-        min="0.01"
-        [errorText]="'Insira um valor válido'"
-      >
-      </ion-input>
-    </ion-card-content>
-  </ion-card>
+        <ion-item lines="none" style="padding-top: 0;">
+          <ion-label position="stacked" style="font-size: 0.8rem;">Pesquisar moeda de origem</ion-label>
+          <ion-input [(ngModel)]="filtroFromCurrency" (ionInput)="filtrarCurrencyListFrom()" placeholder="Nome ou sigla" style="font-size: 0.9rem;"></ion-input>
+        </ion-item>
 
+        <ion-card style="margin-bottom: 8px;">
+          <ion-card-header style="padding: 8px 16px;">
+            <ion-card-subtitle style="font-size: 0.85rem;">DE</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content style="padding: 0 16px 8px;">
+            <ion-item lines="none" style="padding-left: 0;">
+              <ion-select
+                [(ngModel)]="fromCurrency"
+                name="fromCurrency"
+                (ionChange)="loadFlag(fromCurrency)"
+                interface="modal"
+                style="font-size: 0.9rem;">
 
-    <div>
-      <ion-card>
-        <ion-card-header>
-          <ion-card-subtitle>DE</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-      <ion-item>
-        <ion-select
-          [(ngModel)]="fromCurrency"
-          name="fromCurrency"
-          (ionChange)="loadFlag(fromCurrency)"
-          interface="modal">
+                <ion-select-option
+                  *ngFor="let currency of filteredCurrencyListFrom"
+                  [value]="currency.code">
+                  {{ currency.code }} - {{ currency.name }}
+                </ion-select-option>
 
-          <ion-select-option
-          *ngFor="let currency of currencyList"
-          [value]="currency.code"
-        >
-          {{ currency.code }} - {{ currency.name }}
-        </ion-select-option>
+              </ion-select>
+              <img [src]="getFlag(fromCurrency)" alt="From flag" *ngIf="fromCurrency" style="width: 24px; height: 18px; margin-left: 8px; object-fit: contain;" />
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
 
-        </ion-select>
-        <img [src]="getFlag(fromCurrency)" alt="From flag" *ngIf="fromCurrency" />
-      </ion-item>
-    </ion-card-content>
-    </ion-card>
+        <ion-card style="margin-bottom: 8px; padding: 4px;">
+          <ion-button expand="block" color="dark" (click)="swapCurrencies()" type="button" style="font-size: 1rem; height: 36px;">
+            <ion-icon name="swap-vertical-outline" style="font-size: 1.2rem;"></ion-icon>
+          </ion-button>
+        </ion-card>
 
+        <ion-item lines="none" style="padding-top: 0;">
+          <ion-label position="stacked" style="font-size: 0.8rem;">Pesquisar moeda de destino</ion-label>
+          <ion-input [(ngModel)]="filtroToCurrency" (ionInput)="filtrarCurrencyListTo()" placeholder="Nome ou sigla" style="font-size: 0.9rem;"></ion-input>
+        </ion-item>
 
-      <ion-card>
-        <ion-button expand="block" color="dark" (click)="swapCurrencies()" type="button">
-          <ion-icon name="swap-vertical-outline"></ion-icon>
+        <ion-card style="margin-bottom: 8px;">
+          <ion-card-header style="padding: 8px 16px;">
+            <ion-card-subtitle style="font-size: 0.85rem;">PARA</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content style="padding: 0 16px 8px;">
+            <ion-item lines="none" style="padding-left: 0;">
+              <ion-select [(ngModel)]="toCurrency" name="toCurrency" (ionChange)="loadFlag(toCurrency)" interface="modal" style="font-size: 0.9rem;">
+                <ion-select-option *ngFor="let currency of filteredCurrencyListTo" [value]="currency.code">
+                  {{ currency.code }} - {{ currency.name }}
+                </ion-select-option>
+              </ion-select>
+              <img [src]="getFlag(toCurrency)" alt="To flag" *ngIf="toCurrency" style="width: 24px; height: 18px; margin-left: 8px; object-fit: contain;" />
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <ion-grid class="ion-text-center" style="padding: 4px 0;">
+        <h3 style="font-size: 1rem; margin: 0;">{{ exchangeRateText }}</h3>
+      </ion-grid>
+
+      <div class="ion-text-center" style="margin-top: auto;">
+        <ion-button
+          expand="block"
+          color="dark"
+          type="submit"
+          [disabled]="!conversionForm.valid || amount <= 0"
+          style="font-size: 1rem; height: 40px;">
+          CONVERTER
         </ion-button>
-      </ion-card>
+      </div>
 
-
-      <ion-card>
-        <ion-card-header>
-        <ion-card-subtitle>PARA</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-      <ion-item>
-        <ion-select [(ngModel)]="toCurrency" name="toCurrency" (ionChange)="loadFlag(toCurrency)" interface="modal">
-          <ion-select-option *ngFor="let currency of currencyList" [value]="currency.code">
-            {{ currency.code }} - {{ currency.name }}
-          </ion-select-option>
-        </ion-select>
-        <img [src]="getFlag(toCurrency)" alt="To flag" *ngIf="toCurrency" />
-      </ion-item>
-    </ion-card-content>
-    </ion-card>
-    </div>
-
-
-    <ion-grid class="ion-text-center">
-      <h3>
-      {{ exchangeRateText }}
-    </h3>
-    </ion-grid>
-
-
-    <div class="ion-text-center">
-      <ion-button
-        expand="block"
-        color="dark"
-        type="submit"
-        [disabled]="!conversionForm.valid || amount <= 0"
-      >
-        CONVERTER
-      </ion-button>
-    </div>
-
-  </form>
+    </form>
 
   </div>
 </ion-content>

@@ -1,4 +1,3 @@
-// tab2.page.ts
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { HistoryService } from '../services/history.service';
@@ -17,6 +16,14 @@ export class Tab2Page implements OnInit {
   currencyList: { code: string; name: string }[] = [];
   countryList: { [key: string]: string } = {};
   isOffline: boolean = false;
+
+  filtroFromCurrency: string = '';
+  filtroToCurrency: string = '';
+
+  filteredCurrencyListFrom: { code: string; name: string }[] = [];
+  filteredCurrencyListTo: { code: string; name: string }[] = [];
+
+  
 
   private readonly CACHE_KEY = 'exchange_rates';
   private cacheDuration: number = 24 * 60 * 60 * 1000; // Default value
@@ -62,10 +69,11 @@ export class Tab2Page implements OnInit {
 
   loadCurrencies() {
     this.http.get<{ [key: string]: string }>('/assets/currencies.json').subscribe((data) => {
-      this.currencyList = Object.entries(data).map(([code, name]) => ({
-        code,
-        name,
-      }));
+      this.currencyList = Object.entries(data).map(([code, name]) => ({ code, name }));
+
+      // Inicializa as listas filtradas com todos os valores carregados
+      this.filteredCurrencyListFrom = [...this.currencyList];
+      this.filteredCurrencyListTo = [...this.currencyList];
     });
   }
 
@@ -98,6 +106,20 @@ export class Tab2Page implements OnInit {
   swapCurrencies(): void {
     [this.fromCurrency, this.toCurrency] = [this.toCurrency, this.fromCurrency];
     this.getExchangeRate();
+  }
+
+  filtrarCurrencyListFrom() {
+    const termo = this.filtroFromCurrency.toLowerCase().trim();
+    this.filteredCurrencyListFrom = this.currencyList.filter(currency =>
+      currency.code.toLowerCase().includes(termo) || currency.name.toLowerCase().includes(termo)
+    );
+  }
+
+  filtrarCurrencyListTo() {
+    const termo = this.filtroToCurrency.toLowerCase().trim();
+    this.filteredCurrencyListTo = this.currencyList.filter(currency =>
+      currency.code.toLowerCase().includes(termo) || currency.name.toLowerCase().includes(termo)
+    );
   }
 
   async getCachedRates(fromCurrency: string): Promise<any> {
