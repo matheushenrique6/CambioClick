@@ -8,6 +8,10 @@ const routes: Routes = [
   },  {
     path: 'selecionar-moeda',
     loadChildren: () => import('./selecionar-moeda/selecionar-moeda.module').then( m => m.SelecionarMoedaPageModule)
+  },
+  {
+    path: 'tab4',
+    loadChildren: () => import('./tab4/tab4.module').then( m => m.Tab4PageModule)
   }
 
 ];
