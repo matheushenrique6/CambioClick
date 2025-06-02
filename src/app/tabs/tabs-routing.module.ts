@@ -20,7 +20,7 @@ const routes: Routes = [
         loadChildren: () => import('../tab3/tab3.module').then(m => m.Tab3PageModule)
       },{
   path: 'tab4',
-  loadChildren: () => import('/home/matheus/Documentos/git/CambioClick/src/app/tab4/tab4.module').then(m => m.Tab4PageModule)
+  loadChildren: () => import('../tab4/tab4.module').then(m => m.Tab4PageModule)
 },
 
       {
